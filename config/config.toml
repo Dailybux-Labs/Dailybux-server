@@ -1,0 +1,14 @@
+[project]
+name = "dailybux-server"
+
+[mysql]
+host = "localhost"
+port = 3306
+user = "root"
+password = "123456"
+db_name = ""
+
+[redis]
+addr = "bithop-test-outside.redis.singapore.rds.aliyuncs.com:6379"
+password = "FL#OF2o9lFdfLFBPh#FDksdjf%F"
+
