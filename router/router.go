@@ -7,6 +7,10 @@ import (
 	"github.com/didip/tollbooth"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+
+	"dailybux/handler"
+	"dailybux/model"
+	"dailybux/router/result"
 )
 
 func Make() {
@@ -18,7 +22,7 @@ func Make() {
 		httpError := tollbooth.LimitByRequest(limiter, c.Writer, c.Request)
 		if httpError != nil {
 			c.AbortWithStatus(httpError.StatusCode)
-			c.JSON(http.StatusBadRequest, Response{Code: httpError.StatusCode, Msg: httpError.Message})
+			c.JSON(http.StatusBadRequest, result.Response{Code: httpError.StatusCode, Msg: httpError.Message})
 			return
 		}
 		c.Next()
@@ -26,7 +30,11 @@ func Make() {
 	r.Use(middleware)
 	r.Use(Cors())
 
-	r.POST("/test", test())
+	r.POST("/login", login())
+	r.POST("/userInfo", userInfo())
+	r.GET("/crunch", crunchInfo())
+	r.GET("/peanut", peanutInfo())
+	r.GET("/dailyCheckIn", dailyCheckIn())
 
 	err := r.Run(":8020")
 	if err != nil {
@@ -34,9 +42,78 @@ func Make() {
 	}
 }
 
-func test() func(c *gin.Context) {
+func login() func(c *gin.Context) {
 	return func(c *gin.Context) {
+		var fetchErc20Req model.LoginReq
+		err := c.BindJSON(&fetchErc20Req)
+		if err != nil {
+			zap.S().Errorf("[%v] BindJSON %v", fetchErc20Req, err.Error())
+		}
+		res, err := handler.Login(&fetchErc20Req)
+		if err != nil {
+			zap.S().Errorf("[%v] FetchErc20 %v", fetchErc20Req, err.Error())
+			c.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, result.OK.WithData(res))
+	}
+}
 
+func userInfo() func(c *gin.Context) {
+	return func(c *gin.Context) {
+		var req model.UserInfoReq
+		err := c.BindJSON(&req)
+		if err != nil {
+			zap.S().Errorf("[%v] BindJSON %v", req, err.Error())
+		}
+		res, err := handler.UserInfo(&req)
+		if err != nil {
+			zap.S().Errorf("[%v] FetchErc20 %v", req, err.Error())
+			c.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, result.OK.WithData(res))
+	}
+}
+
+func dailyCheckIn() func(c *gin.Context) {
+	return func(c *gin.Context) {
+		var req model.UserInfoReq
+		err := c.BindJSON(&req)
+		if err != nil {
+			zap.S().Errorf("[%v] BindJSON %v", req, err.Error())
+		}
+		res, err := handler.DailyCheckIn(&req)
+		if err != nil {
+			zap.S().Errorf("[%v] FetchErc20 %v", req, err.Error())
+			c.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, result.OK.WithData(res))
+	}
+}
+
+func crunchInfo() func(c *gin.Context) {
+	return func(c *gin.Context) {
+		res, err := handler.Crunch()
+		if err != nil {
+			zap.S().Errorf("FetchErc20 %v", err.Error())
+			c.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, result.OK.WithData(res))
+	}
+}
+
+func peanutInfo() func(c *gin.Context) {
+	return func(c *gin.Context) {
+		res, err := handler.Peanut()
+		if err != nil {
+			zap.S().Errorf("FetchErc20 %v", err.Error())
+			c.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, result.OK.WithData(res))
 	}
 }
 

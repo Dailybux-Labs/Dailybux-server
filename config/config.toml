@@ -2,11 +2,11 @@
 name = "dailybux-server"
 
 [mysql]
-host = "localhost"
-port = 3306
-user = "root"
-password = "123456"
-db_name = ""
+host = "dailybux.cluster-c1iigoamcpiw.ap-southeast-1.rds.amazonaws.com"
+port = 13306
+user = "dailybux"
+password = "daily1234!"
+db_name = "dailybux"
 
 [redis]
 addr = "bithop-test-outside.redis.singapore.rds.aliyuncs.com:6379"
